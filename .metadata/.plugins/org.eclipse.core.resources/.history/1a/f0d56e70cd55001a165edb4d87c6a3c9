@@ -1,0 +1,483 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.rtec.Telas;
+
+/**
+ *
+ * @author ramsessf
+ */
+import java.sql.*;
+import com.rtec.Dal.ModuloConexao;
+import javax.swing.JOptionPane;
+
+public class TelaUsuario extends javax.swing.JInternalFrame {
+
+    // usando a variavel conexao do DAL
+    Connection conexao = null;
+    //Criando as variaves especiais para a conexao com o banco
+    // Prepared Statement e ResultSet são frameworks do pacote java.sql
+    //e servem para preparar e executar as instrucoes SQL
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+
+    public TelaUsuario() {
+        initComponents();
+        conexao = ModuloConexao.conector();
+
+        //botao revelar senha
+        /*
+         if (txtUsuSenha.getText() == null) {
+         btnRevSenha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/naorevelapwd.png")));
+           
+
+         } else {
+         btnRevSenha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/revelapwd.png")));
+           
+         }*/
+    }
+
+    private void consultar() {
+        //Metodo para consulta usuarios na tela de cadastro de usuario
+        String sql = "select * from tbusuarios where iduser=?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuId.getText());
+
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                //as linhas abaixo recuperam os valores dos respectivos campos
+                //da tabela
+                txtUsuNome.setText(rs.getString(2));
+                txtUsuFone.setText(rs.getString(3));
+                txtUsuLogin.setText(rs.getString(4));
+                txtUsuSenha.setText(rs.getString(5));
+                // a linha abaixo se refere ao combobox
+                cmbUsuPerfil.setSelectedItem(rs.getString(6));
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuário não cadastrado!");
+                txtUsuNome.setText(null);
+                txtUsuFone.setText(null);
+                txtUsuLogin.setText(null);
+                txtUsuSenha.setText(null);
+                cmbUsuPerfil.setSelectedItem(null);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+
+    }
+
+    private void adicionar() {
+        //Metodo para adicionar usuarios
+        String sql = "insert into tbusuarios(iduser, usuario, fone, login, senha, perfil)values(?, ?, ?, ?, ?, ?);";
+
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuId.getText());
+            pst.setString(2, txtUsuNome.getText());
+            pst.setString(3, txtUsuFone.getText());
+            pst.setString(4, txtUsuLogin.getText());
+            pst.setString(5, txtUsuSenha.getText());
+            pst.setString(6, cmbUsuPerfil.getSelectedItem().toString());
+
+            //valida se os campos estão preenchidos
+            if (txtUsuId.getText().isEmpty()
+                    || txtUsuNome.getText().isEmpty()
+                    || txtUsuLogin.getText().isEmpty()
+                    || txtUsuSenha.getText().isEmpty()
+                    || cmbUsuPerfil.getSelectedItem().toString().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+            } else {
+                // a linha abaixo é usada para confirmar a insercao dos dados na tabela
+                int adicionado = pst.executeUpdate();
+                if (adicionado > 0) {
+                    JOptionPane.showMessageDialog(null, "Usuário cadastrado com sucesso!");
+                    txtUsuId.setText(null);
+                    txtUsuNome.setText(null);
+                    txtUsuFone.setText(null);
+                    txtUsuLogin.setText(null);
+                    txtUsuSenha.setText(null);
+                    cmbUsuPerfil.setSelectedItem(null);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    //Método para Alterar os dados do usuário
+    public void alterar() {
+        String sql = "Update tbusuarios set usuario=?, fone=?, login=?, senha=?, perfil=? where iduser=?";
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtUsuNome.getText());
+            pst.setString(2, txtUsuFone.getText());
+            pst.setString(3, txtUsuLogin.getText());
+            pst.setString(4, txtUsuSenha.getText());
+            pst.setString(5, cmbUsuPerfil.getSelectedItem().toString());
+            pst.setString(6, txtUsuId.getText());
+
+            //valida se os campos estão preenchidos
+            if (txtUsuId.getText().isEmpty()
+                    || txtUsuNome.getText().isEmpty()
+                    || txtUsuLogin.getText().isEmpty()
+                    || txtUsuSenha.getText().isEmpty()
+                    || cmbUsuPerfil.getSelectedItem().toString().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+            } else {
+                // a linha abaixo é usada para confirmar a insercao dos dados na tabela
+                int alterado = pst.executeUpdate();
+                if (alterado > 0) {
+                    JOptionPane.showMessageDialog(null, "Alterado com sucesso!");
+                    txtUsuId.setText(null);
+                    txtUsuNome.setText(null);
+                    txtUsuFone.setText(null);
+                    txtUsuLogin.setText(null);
+                    txtUsuSenha.setText(null);
+                    cmbUsuPerfil.setSelectedItem(null);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    public void deletar() {
+
+        // exitbe uma caixa de diálogo
+        int confirma = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja excluir este usuário? ", "Atenção", JOptionPane.YES_NO_OPTION);
+
+        String sql = "delete from tbusuarios where iduser =?";
+        if (confirma == JOptionPane.YES_OPTION) {
+
+            try {
+                pst = conexao.prepareStatement(sql);
+                pst.setString(1, txtUsuId.getText());
+
+                if (txtUsuId.getText().isEmpty()
+                        || txtUsuNome.getText().isEmpty()
+                        || txtUsuLogin.getText().isEmpty()
+                        || txtUsuSenha.getText().isEmpty()
+                        || cmbUsuPerfil.getSelectedItem().toString().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+                } else {
+                    // a linha abaixo é usada para confirmar a insercao dos dados na tabela
+                    int deletado = pst.executeUpdate();
+                    if (deletado > 0) {
+                        JOptionPane.showMessageDialog(null, "Usuário excluído com sucesso!");
+                        txtUsuId.setText(null);
+                        txtUsuNome.setText(null);
+                        txtUsuFone.setText(null);
+                        txtUsuLogin.setText(null);
+                        txtUsuSenha.setText(null);
+                        cmbUsuPerfil.setSelectedItem(null);
+                    }
+                }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);
+            }
+
+        }
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollBar1 = new javax.swing.JScrollBar();
+        lblId = new javax.swing.JLabel();
+        lblNome = new javax.swing.JLabel();
+        lblLogin = new javax.swing.JLabel();
+        lblSenha = new javax.swing.JLabel();
+        lblPerfil = new javax.swing.JLabel();
+        txtUsuSenha = new javax.swing.JPasswordField();
+        txtUsuId = new javax.swing.JTextField();
+        txtUsuNome = new javax.swing.JTextField();
+        txtUsuLogin = new javax.swing.JTextField();
+        btnUsuAdd = new javax.swing.JButton();
+        cmbUsuPerfil = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        txtUsuFone = new javax.swing.JTextField();
+        btnUsuAlterar = new javax.swing.JButton();
+        btnUsuDel = new javax.swing.JButton();
+        btnUsuConsul = new javax.swing.JButton();
+        lblConsPerfil = new javax.swing.JLabel();
+        btnLimpar = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setTitle("Cadastro de Usuários");
+
+        lblId.setText("*Id:");
+
+        lblNome.setText("*Nome:");
+
+        lblLogin.setText("*Login:");
+
+        lblSenha.setText("*Senha:");
+
+        lblPerfil.setText("*Perfil:");
+
+        txtUsuSenha.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUsuSenhaActionPerformed(evt);
+            }
+        });
+
+        txtUsuLogin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUsuLoginActionPerformed(evt);
+            }
+        });
+
+        btnUsuAdd.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        btnUsuAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/create.png"))); // NOI18N
+        btnUsuAdd.setToolTipText("Adicionar");
+        btnUsuAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUsuAdd.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnUsuAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuAddActionPerformed(evt);
+            }
+        });
+
+        cmbUsuPerfil.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "admin", "user" }));
+        cmbUsuPerfil.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbUsuPerfilActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Fone:");
+
+        btnUsuAlterar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/update.png"))); // NOI18N
+        btnUsuAlterar.setToolTipText("Alterar");
+        btnUsuAlterar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUsuAlterar.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnUsuAlterar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuAlterarActionPerformed(evt);
+            }
+        });
+
+        btnUsuDel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/delete.png"))); // NOI18N
+        btnUsuDel.setToolTipText("Excluir");
+        btnUsuDel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUsuDel.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnUsuDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuDelActionPerformed(evt);
+            }
+        });
+
+        btnUsuConsul.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/read.png"))); // NOI18N
+        btnUsuConsul.setToolTipText("Consultar");
+        btnUsuConsul.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnUsuConsul.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnUsuConsul.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuConsulActionPerformed(evt);
+            }
+        });
+
+        lblConsPerfil.setForeground(new java.awt.Color(255, 0, 0));
+        lblConsPerfil.setEnabled(false);
+
+        btnLimpar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/iconfinder_eraser_70987.png"))); // NOI18N
+        btnLimpar.setToolTipText("limpar os campos");
+        btnLimpar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimparActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("* Campos Obrigatórios");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(43, 43, 43)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(3, 3, 3)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lblPerfil)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cmbUsuPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(14, 14, 14)
+                                        .addComponent(lblId)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtUsuNome)
+                                                .addGap(25, 25, 25)
+                                                .addComponent(jLabel1)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtUsuFone, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lblLogin)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(txtUsuLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 108, Short.MAX_VALUE)
+                                        .addComponent(lblSenha)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(txtUsuSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(44, 44, 44))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel2)
+                        .addGap(62, 62, 62))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(1, 1, 1)
+                                .addComponent(lblNome))
+                            .addComponent(lblConsPerfil))
+                        .addContainerGap())))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(141, 141, 141)
+                .addComponent(btnUsuAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(btnUsuAlterar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(btnUsuDel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addComponent(btnUsuConsul, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnUsuAdd, btnUsuAlterar, btnUsuConsul, btnUsuDel});
+
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addComponent(jLabel2)
+                .addGap(27, 27, 27)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtUsuId, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblId))
+                    .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(33, 33, 33)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txtUsuFone, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblNome)
+                    .addComponent(txtUsuNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblLogin)
+                    .addComponent(txtUsuLogin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblSenha)
+                    .addComponent(txtUsuSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cmbUsuPerfil, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblPerfil))
+                .addGap(64, 64, 64)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(btnUsuAlterar, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                    .addComponent(btnUsuDel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnUsuAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnUsuConsul, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(35, 35, 35)
+                .addComponent(lblConsPerfil)
+                .addContainerGap(26, Short.MAX_VALUE))
+        );
+
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {cmbUsuPerfil, jLabel1, lblSenha, txtUsuFone, txtUsuId, txtUsuLogin, txtUsuNome, txtUsuSenha});
+
+        setBounds(0, 0, 670, 490);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void txtUsuLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuLoginActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUsuLoginActionPerformed
+
+    private void btnUsuAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuAddActionPerformed
+        adicionar();
+
+
+    }//GEN-LAST:event_btnUsuAddActionPerformed
+
+    private void cmbUsuPerfilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbUsuPerfilActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbUsuPerfilActionPerformed
+
+    private void btnUsuAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuAlterarActionPerformed
+        alterar();
+    }//GEN-LAST:event_btnUsuAlterarActionPerformed
+
+    private void btnUsuConsulActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuConsulActionPerformed
+        // chamada do método "consultar" 
+        consultar();
+    }//GEN-LAST:event_btnUsuConsulActionPerformed
+
+    private void txtUsuSenhaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuSenhaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUsuSenhaActionPerformed
+
+    private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
+        //botao para limpar os campos
+        txtUsuId.setText(null);
+        txtUsuNome.setText(null);
+        txtUsuFone.setText(null);
+        txtUsuLogin.setText(null);
+        txtUsuSenha.setText(null);
+        cmbUsuPerfil.setSelectedItem(null);
+    }//GEN-LAST:event_btnLimparActionPerformed
+
+    private void btnUsuDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuDelActionPerformed
+        deletar();
+    }//GEN-LAST:event_btnUsuDelActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnLimpar;
+    private javax.swing.JButton btnUsuAdd;
+    private javax.swing.JButton btnUsuAlterar;
+    private javax.swing.JButton btnUsuConsul;
+    private javax.swing.JButton btnUsuDel;
+    private javax.swing.JComboBox cmbUsuPerfil;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollBar jScrollBar1;
+    private javax.swing.JLabel lblConsPerfil;
+    private javax.swing.JLabel lblId;
+    private javax.swing.JLabel lblLogin;
+    private javax.swing.JLabel lblNome;
+    private javax.swing.JLabel lblPerfil;
+    private javax.swing.JLabel lblSenha;
+    private javax.swing.JTextField txtUsuFone;
+    protected javax.swing.JTextField txtUsuId;
+    private javax.swing.JTextField txtUsuLogin;
+    private javax.swing.JTextField txtUsuNome;
+    private javax.swing.JPasswordField txtUsuSenha;
+    // End of variables declaration//GEN-END:variables
+}

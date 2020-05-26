@@ -1,0 +1,450 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.rtec.Telas;
+
+/**
+ *
+ * @author ramsessf
+ */
+import java.sql.*;
+import com.rtec.Dal.ModuloConexao;
+import javax.swing.JOptionPane;
+// A linha abaixo importa recursos da biblioteca rs2xml.jar
+import net.proteanit.sql.DbUtils;
+
+public class TelaCliente extends javax.swing.JInternalFrame {
+
+    Connection conexao = null;
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+
+    public TelaCliente() {
+        initComponents();
+        conexao = ModuloConexao.conector();
+    }
+
+    public void consultar() {
+
+        String sql = "select * from tbcliente where idcli=?";
+
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtCliId.getText());
+
+            rs = pst.executeQuery();
+
+            if (rs.next()) {
+                txtCliId.setText(rs.getString(1));
+                txtCliNome.setText(rs.getString(2));
+                txtCliEnd.setText(rs.getString(3));
+                txtCliFone.setText(rs.getString(4));
+                txtCliEmail.setText(rs.getString(5));
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Cliente não cadastrado!");
+                txtCliNome.setText(null);
+                txtCliEnd.setText(null);
+                txtCliFone.setText(null);
+                txtCliEmail.setText(null);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    public void adicionar() {
+
+        String sql = "insert into tbcliente(nomecli, endcli, fonecli, emailcli) values(?, ?, ?, ?)";
+
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtCliNome.getText());
+            pst.setString(2, txtCliEnd.getText());
+            pst.setString(3, txtCliFone.getText());
+            pst.setString(4, txtCliEmail.getText());
+
+            if (txtCliNome.getText().isEmpty()
+                    || txtCliFone.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+
+            } else {
+                int adicionado = pst.executeUpdate();
+                if (adicionado > 0) {
+                    JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
+                    txtCliNome.setText(null);
+                    txtCliEnd.setText(null);
+                    txtCliFone.setText(null);
+                    txtCliEmail.setText(null);
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+
+    }
+
+    public void alterar() {
+
+        String sql = "update tbcliente set nomecli=?, endcli=?, fonecli=?, emailcli=? where idcli=?";
+
+        try {
+            pst = conexao.prepareStatement(sql);
+            pst.setString(1, txtCliNome.getText());
+            pst.setString(2, txtCliEnd.getText());
+            pst.setString(3, txtCliFone.getText());
+            pst.setString(4, txtCliEmail.getText());
+            pst.setString(5, txtCliId.getText());
+
+            if (txtCliId.getText().isEmpty()
+                    || txtCliFone.getText().isEmpty()) {
+
+                JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+            } else {
+                int alterado = pst.executeUpdate();
+                if (alterado > 0) {
+                    JOptionPane.showMessageDialog(null, "Dados do cliente alterados com sucesso!");
+                    txtCliId.setText(null);
+                    txtCliNome.setText(null);
+                    txtCliEnd.setText(null);
+                    txtCliFone.setText(null);
+                    txtCliEmail.setText(null);
+
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+    }
+
+    public void deletar() {
+
+        String sql = "delete from tbcliente where idcli =?";
+
+        int confirma = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja excluir este usuário?", "Atenção", JOptionPane.YES_NO_OPTION);
+
+        if (confirma == JOptionPane.YES_OPTION) {
+            try {
+                pst = conexao.prepareStatement(sql);
+                pst.setString(1, txtCliId.getText());
+
+                if (txtCliFone.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Prencha os campos obrigatórios!");
+                } else {
+                    int deletado = pst.executeUpdate();
+                    if (deletado > 0) {
+                        JOptionPane.showMessageDialog(null, "Dados do cliente excluídos com sucesso!");
+                        txtCliId.setText(null);
+                        txtCliNome.setText(null);
+                        txtCliEnd.setText(null);
+                        txtCliFone.setText(null);
+                        txtCliEmail.setText(null);
+
+                    }
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e);
+            }
+        }
+
+    }
+
+    //Metodo para pesquisar cliente pelo nome com filtro
+    private void pesquisar_cliente() {
+        String sql = "select * from tbcliente where nomecli like ?";
+
+        try {
+            pst = conexao.prepareStatement(sql);
+            //passando o conteudo da caixa de pesquisa para o ?
+            // e concatenando com o "%" para completar a instrução sql
+            pst.setString(1, txtCliPesquisar.getText() + "%");
+            rs = pst.executeQuery();
+            //a linha abaixo usa o recurso da biblioteca rs2xml.jar para preencher a tabela
+            tblClientes.setModel(DbUtils.resultSetToTableModel(rs));
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e);
+        }
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        list1 = new java.awt.List();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lblCliId = new javax.swing.JLabel();
+        lblCliNome = new javax.swing.JLabel();
+        lblCliEnd = new javax.swing.JLabel();
+        lblCliFone = new javax.swing.JLabel();
+        lblCliEmail = new javax.swing.JLabel();
+        txtCliId = new javax.swing.JTextField();
+        txtCliNome = new javax.swing.JTextField();
+        txtCliEnd = new javax.swing.JTextField();
+        txtCliFone = new javax.swing.JTextField();
+        txtCliEmail = new javax.swing.JTextField();
+        btnCliAdd = new javax.swing.JButton();
+        btnCliAlt = new javax.swing.JButton();
+        btnCliDeL = new javax.swing.JButton();
+        lblAviso = new javax.swing.JLabel();
+        btnLimpar = new javax.swing.JButton();
+        txtCliPesquisar = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblClientes = new javax.swing.JTable();
+        jLabel8 = new javax.swing.JLabel();
+
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setTitle("Cadastro de Clientes");
+        setPreferredSize(new java.awt.Dimension(600, 480));
+        getContentPane().setLayout(null);
+
+        lblCliId.setText("*Id:");
+        getContentPane().add(lblCliId);
+        lblCliId.setBounds(45, 201, 30, 14);
+
+        lblCliNome.setText("*Nome:");
+        getContentPane().add(lblCliNome);
+        lblCliNome.setBounds(28, 236, 50, 20);
+
+        lblCliEnd.setText("*Endere�o:");
+        getContentPane().add(lblCliEnd);
+        lblCliEnd.setBounds(10, 278, 70, 14);
+
+        lblCliFone.setText("*Telefone:");
+        getContentPane().add(lblCliFone);
+        lblCliFone.setBounds(10, 320, 70, 14);
+
+        lblCliEmail.setText("*Email:");
+        getContentPane().add(lblCliEmail);
+        lblCliEmail.setBounds(270, 320, 40, 14);
+
+        txtCliId.setEditable(false);
+        txtCliId.setPreferredSize(new java.awt.Dimension(100, 25));
+        txtCliId.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCliIdActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txtCliId);
+        txtCliId.setBounds(80, 190, 64, 30);
+
+        txtCliNome.setPreferredSize(new java.awt.Dimension(100, 25));
+        getContentPane().add(txtCliNome);
+        txtCliNome.setBounds(80, 230, 298, 30);
+
+        txtCliEnd.setPreferredSize(new java.awt.Dimension(100, 25));
+        getContentPane().add(txtCliEnd);
+        txtCliEnd.setBounds(80, 270, 480, 30);
+
+        txtCliFone.setPreferredSize(new java.awt.Dimension(100, 25));
+        getContentPane().add(txtCliFone);
+        txtCliFone.setBounds(80, 310, 131, 30);
+
+        txtCliEmail.setPreferredSize(new java.awt.Dimension(100, 25));
+        txtCliEmail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCliEmailActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txtCliEmail);
+        txtCliEmail.setBounds(310, 310, 255, 30);
+
+        btnCliAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/rtec/Icones/create.png"))); // NOI18N
+        btnCliAdd.setToolTipText("Adicionar");
+        btnCliAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCliAdd.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnCliAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCliAddActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btnCliAdd);
+        btnCliAdd.setBounds(180, 360, 70, 68);
+
+        btnCliAlt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/rtec/Icones/update.png"))); // NOI18N
+        btnCliAlt.setToolTipText("Alterar");
+        btnCliAlt.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCliAlt.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnCliAlt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCliAltActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btnCliAlt);
+        btnCliAlt.setBounds(280, 360, 70, 68);
+
+        btnCliDeL.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/rtec/Icones/delete.png"))); // NOI18N
+        btnCliDeL.setToolTipText("Deletar");
+        btnCliDeL.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnCliDeL.setPreferredSize(new java.awt.Dimension(70, 68));
+        btnCliDeL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCliDeLActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btnCliDeL);
+        btnCliDeL.setBounds(380, 360, 70, 68);
+
+        lblAviso.setText("*Campos Obrigat�rios");
+        getContentPane().add(lblAviso);
+        lblAviso.setBounds(430, 10, 120, 14);
+
+        btnLimpar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/rtec/Icones/iconfinder_eraser_70987.png"))); // NOI18N
+        btnLimpar.setToolTipText("Limpar");
+        btnLimpar.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
+        btnLimpar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimparActionPerformed(evt);
+            }
+        });
+        getContentPane().add(btnLimpar);
+        btnLimpar.setBounds(540, 190, 36, 36);
+
+        txtCliPesquisar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtCliPesquisarKeyReleased(evt);
+            }
+        });
+        getContentPane().add(txtCliPesquisar);
+        txtCliPesquisar.setBounds(10, 23, 270, 30);
+
+        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/infox/Icones/pesquisar.png"))); // NOI18N
+        getContentPane().add(jLabel7);
+        jLabel7.setBounds(284, 21, 0, 0);
+
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
+            },
+            new String [] {
+                "Id", "Nome", "Endere�o", "Telefone", "Email"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblClientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblClientesMouseClicked(evt);
+            }
+        });
+        tblClientes.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tblClientesKeyReleased(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblClientes);
+
+        getContentPane().add(jScrollPane1);
+        jScrollPane1.setBounds(10, 64, 640, 110);
+
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/rtec/Icones/pesquisar.png"))); // NOI18N
+        getContentPane().add(jLabel8);
+        jLabel8.setBounds(290, 14, 40, 40);
+
+        setBounds(0, 0, 670, 490);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void txtCliIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCliIdActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtCliIdActionPerformed
+
+    private void btnCliAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCliAddActionPerformed
+        adicionar();
+    }//GEN-LAST:event_btnCliAddActionPerformed
+
+    private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimparActionPerformed
+
+        txtCliId.setText(null);
+        txtCliNome.setText(null);
+        txtCliEnd.setText(null);
+        txtCliFone.setText(null);
+        txtCliEmail.setText(null);
+
+    }//GEN-LAST:event_btnLimparActionPerformed
+
+    private void btnCliAltActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCliAltActionPerformed
+        alterar();
+    }//GEN-LAST:event_btnCliAltActionPerformed
+
+    private void btnCliDeLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCliDeLActionPerformed
+        deletar();
+    }//GEN-LAST:event_btnCliDeLActionPerformed
+
+    private void txtCliPesquisarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCliPesquisarKeyReleased
+        // chamando o metodo para popoluar a tabela com os dados do banco
+        pesquisar_cliente();
+    }//GEN-LAST:event_txtCliPesquisarKeyReleased
+
+    private void tblClientesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tblClientesKeyReleased
+
+    }//GEN-LAST:event_tblClientesKeyReleased
+    //evento que será usado para setar os campos da tabela com o click do mouse
+    private void tblClientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblClientesMouseClicked
+        //chamando o método para setar os campos
+        setar_campos_tabela();
+    }//GEN-LAST:event_tblClientesMouseClicked
+
+    private void txtCliEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCliEmailActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtCliEmailActionPerformed
+
+    public void setar_campos_tabela() {
+        int setar = tblClientes.getSelectedRow(); 
+        
+        txtCliId.setText(tblClientes.getModel().getValueAt(setar, 0).toString());
+        txtCliNome.setText(tblClientes.getModel().getValueAt(setar, 1).toString());
+        txtCliEnd.setText(tblClientes.getModel().getValueAt(setar, 2).toString());
+        txtCliFone.setText(tblClientes.getModel().getValueAt(setar, 3).toString());
+        txtCliEmail.setText(tblClientes.getModel().getValueAt(setar, 4).toString());
+
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCliAdd;
+    private javax.swing.JButton btnCliAlt;
+    private javax.swing.JButton btnCliDeL;
+    private javax.swing.JButton btnLimpar;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblAviso;
+    private javax.swing.JLabel lblCliEmail;
+    private javax.swing.JLabel lblCliEnd;
+    private javax.swing.JLabel lblCliFone;
+    private javax.swing.JLabel lblCliId;
+    private javax.swing.JLabel lblCliNome;
+    private java.awt.List list1;
+    private javax.swing.JTable tblClientes;
+    private javax.swing.JTextField txtCliEmail;
+    private javax.swing.JTextField txtCliEnd;
+    private javax.swing.JTextField txtCliFone;
+    private javax.swing.JTextField txtCliId;
+    private javax.swing.JTextField txtCliNome;
+    private javax.swing.JTextField txtCliPesquisar;
+    // End of variables declaration//GEN-END:variables
+}
